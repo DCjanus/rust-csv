@@ -361,13 +361,14 @@ fn no_infinite_loop_on_io_errors() {
 
 /// Return the target/debug directory path.
 fn debug_dir() -> PathBuf {
-    env::current_exe()
-        .expect("test binary path")
-        .parent()
-        .expect("test binary directory")
-        .parent()
-        .expect("example binary directory")
-        .to_path_buf()
+    let mut p = env::current_exe().expect("test binary path");
+    while let Some(basename) = p.file_name() {
+        if basename == "debug" {
+            return p;
+        }
+        p = p.parent().expect("parent directory").to_path_buf();
+    }
+    panic!("could not find `debug` target directory")
 }
 
 /// Return the directory containing the example test binaries.
